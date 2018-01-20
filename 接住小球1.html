@@ -20,17 +20,18 @@
 		var mc = document.querySelector('#mc');
 		var ctx = mc.getContext('2d');
 		var boomArr = [];
-		
+		//  随机数函数
 		function rn(x, y) {
 			return Math.round(Math.random() * (y - x) + x);
 		}
-		//  上方矩形
+		//  矩形的构造函数
 		function Boom(x, y, bc) {
 			this.x = x; // x坐标
 			this.y = y // y 坐标
 
 			this.bc = bc // 背景色
 		}
+		//   原型方法
 		Boom.prototype.move = function() {
 			ctx.beginPath();
 			ctx.fillStyle = this.bc;
@@ -38,11 +39,12 @@
 			ctx.fill();
 
 		}
-		var nowArr = [];
+		// 实例化一个矩形
+		
 		function createBoom() {
-
+			
 			var num = Math.ceil(mc.width / 100);
-
+			var nowArr = [];
 			for(i = 0; i < num; i++) {
 				// 计算每行的y坐标
 				var thisY = 30 * i;
@@ -57,18 +59,20 @@
 			
 		}
 		createBoom();
-
+	//  创建多个矩形
 	for(var i = 0; i < boomArr.length; i++) {
-				for(var j = 0; j < nowArr.length; j++) {
+				for(var j = 0; j < boomArr[i].length; j++) {
 					boomArr[i][j].move();
 				}
 	}
 	// 创建小球
+		var minV = 4,maxV = 6;
+		
 		var ballX = 300;
 		var ballY = 445;
-		var vx = 4;
-		var vy = 2;
-	
+		var vx = rn(minV,maxV);
+		var vy = rn(-minV,-maxV);
+
 		function createBall() {
 			// 开启一条路径
 			ctx.save();
@@ -85,17 +89,18 @@
 		var timer = setInterval(function(){
 			ctx.clearRect(0,0,600,500);
 //			createBoom();
+			//   利用双层循环创建多个矩形
 			for(var i = 0; i < boomArr.length; i++) {
-				for(var j = 0; j < nowArr.length; j++) {
+				for(var j = 0; j < boomArr[i].length; j++) {
 					boomArr[i][j].move();
 				}
 			}
 			ballX += vx;
 			ballY += vy;
-			createBall();
-			judgHit();
-			rectBox();
-			bkpz();
+			createBall();  //创建小球
+			judgHit();   // 调用小球是否与上方矩形碰撞的函数
+			rectBox();  // 创建板块
+			bkpz(); // 碰到板块反弹
 			// 判断碰壁反弹
 			if(ballX - 15 < 0 || ballX > mc.width - 15) {
 				vx = -vx;
@@ -104,9 +109,7 @@
 				vy = -vy;
 			}
 			// 落地游戏结束
-			if(ballY > mc.height - 15) {
-
-				
+			if(ballY > mc.height - 30) {
 				clearInterval(timer);
 				ctx.clearRect(0,0,600,500);
 				gameOver();
@@ -122,10 +125,10 @@
 			}
 			
 		},20)
-		
+		//   判断小球是否与上方的矩形碰撞  如果碰撞速度置负
 		function judgHit(){
 			for(var i = 0; i < boomArr.length; i++) {
-				for(var j = 0; j < nowArr.length; j++) {
+				for(var j = 0; j < boomArr[i].length; j++) {
 					if(ballY - 15 <= boomArr[i][j].y + 30 && ballX  >= boomArr[i][j].x && ballY + 15 >= boomArr[i][j].y && ballX <= boomArr[i][j].x + 100){
 						boomArr[i].splice(j,1);
 						vy = -vy;
@@ -136,18 +139,19 @@
 		
 		var rectX = 250;
 		var rectY = 480;
+		//  移动的板块
 		function rectBox(){
 			ctx.beginPath();
 			ctx.fillStyle = 'pink';
 			ctx.fillRect(rectX,rectY,100,20);
 			ctx.fill();
 		}
-		
+		//  键盘事件
 		document.onkeydown = function(){
 			var e = event || window.event;
 			switch(e.keyCode){
 				case 37:
-				rectX -= 15;
+				rectX -= 25;
 				if(rectX <= 0){
 					rectX = 0;
 				}
@@ -160,8 +164,9 @@
 				break;
 			}
 		}
+		// 碰撞到板块上方反弹
 		function  bkpz(){
-			if(ballX >= rectX && ballX <= rectX + 100 && ballY + 15 >= rectY){
+			if(ballX >= rectX && ballX  <= rectX + 100 && ballY + 15 >= rectY ){
 				vy = -vy;
 			}
 		}

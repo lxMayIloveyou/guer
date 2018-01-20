@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style type="text/css">
+			#mc {
+				display: block;
+				margin: 0 auto;
+				background: black;
+			}
+		</style>
+	</head>
+
+	<body>
+		<canvas id="mc" width="600" height="500"></canvas>
+	</body>
+	<script type="text/javascript">
+		var mc = document.querySelector('#mc');
+		var ctx = mc.getContext('2d');
+		var boomArr = [];
+		
+		function rn(x, y) {
+			return Math.round(Math.random() * (y - x) + x);
+		}
+		//  上方矩形
+		function Boom(x, y, bc) {
+			this.x = x; // x坐标
+			this.y = y // y 坐标
+
+			this.bc = bc // 背景色
+		}
+		Boom.prototype.move = function() {
+			ctx.beginPath();
+			ctx.fillStyle = this.bc;
+			ctx.fillRect(this.x, this.y, 100, 30);
+			ctx.fill();
+
+		}
+		var nowArr = [];
+		function createBoom() {
+
+			var num = Math.ceil(mc.width / 100);
+
+			for(i = 0; i < num; i++) {
+				// 计算每行的y坐标
+				var thisY = 30 * i;
+				for(var j = 0; j < num; j++) {
+					var thisX = 100 * j;
+					var bc = 'rgb(' + rn(30, 255) + ',' + rn(30, 255) + ',' + rn(30, 255) + ')';
+					var boom = new Boom(thisX, thisY, bc);
+					nowArr.push(boom);
+				}
+			}
+			boomArr.push(nowArr);
+			
+		}
+		createBoom();
+
+	for(var i = 0; i < boomArr.length; i++) {
+				for(var j = 0; j < nowArr.length; j++) {
+					boomArr[i][j].move();
+				}
+	}
+	// 创建小球
+		var ballX = 300;
+		var ballY = 445;
+		var vx = 4;
+		var vy = 2;
+	
+		function createBall() {
+			// 开启一条路径
+			ctx.save();
+			ctx.beginPath();
+			var g = ctx.createRadialGradient(ballX - 20, ballY - 20, 0, ballX, ballY, 35);
+			g.addColorStop('0', 'skyBlue');
+			g.addColorStop('1', 'blue');
+			ctx.arc(ballX, ballY, 15, 0, 2 * Math.PI);
+			ctx.fillStyle = g;
+			ctx.fill();
+			ctx.restore();
+		}
+		createBall();
+		var timer = setInterval(function(){
+			ctx.clearRect(0,0,600,500);
+//			createBoom();
+			for(var i = 0; i < boomArr.length; i++) {
+				for(var j = 0; j < nowArr.length; j++) {
+					boomArr[i][j].move();
+				}
+			}
+			ballX += vx;
+			ballY += vy;
+			createBall();
+			judgHit();
+			rectBox();
+			bkpz();
+			// 判断碰壁反弹
+			if(ballX - 15 < 0 || ballX > mc.width - 15) {
+				vx = -vx;
+			}
+			if(ballY - 15 < 0 ) {
+				vy = -vy;
+			}
+			// 落地游戏结束
+			if(ballY > mc.height - 15) {
+
+				
+				clearInterval(timer);
+				ctx.clearRect(0,0,600,500);
+				gameOver();
+			}
+			//  消除上方所有板块 游戏获胜
+			if(boomArr == 0) {
+				ctx.clearRect(0,0,600,500);
+				vx = 0;
+				vy = 0;
+				win();
+				clearInterval(timer);
+
+			}
+			
+		},20)
+		
+		function judgHit(){
+			for(var i = 0; i < boomArr.length; i++) {
+				for(var j = 0; j < nowArr.length; j++) {
+					if(ballY - 15 <= boomArr[i][j].y + 30 && ballX  >= boomArr[i][j].x && ballY + 15 >= boomArr[i][j].y && ballX <= boomArr[i][j].x + 100){
+						boomArr[i].splice(j,1);
+						vy = -vy;
+					}
+				}
+			}
+		}
+		
+		var rectX = 250;
+		var rectY = 480;
+		function rectBox(){
+			ctx.beginPath();
+			ctx.fillStyle = 'pink';
+			ctx.fillRect(rectX,rectY,100,20);
+			ctx.fill();
+		}
+		
+		document.onkeydown = function(){
+			var e = event || window.event;
+			switch(e.keyCode){
+				case 37:
+				rectX -= 15;
+				if(rectX <= 0){
+					rectX = 0;
+				}
+				break;
+				case 39:
+				rectX += 15;
+				if(rectX >= mc.width - 100){
+					rectX = mc.width - 100;
+				}
+				break;
+			}
+		}
+		function  bkpz(){
+			if(ballX >= rectX && ballX <= rectX + 100 && ballY + 15 >= rectY){
+				vy = -vy;
+			}
+		}
+		// 游戏失败函数
+		function gameOver() {
+			ctx.beginPath();
+			ctx.fillStyle = 'blue';
+			ctx.font = 'bolder 50px Arial';
+			ctx.fillText('Game Over', 170, 250);
+			ctx.fill();
+		}
+		// 获得胜利
+		function win() {
+			ctx.beginPath();
+			ctx.fillStyle = 'red';
+			ctx.font = 'bolder 50px Arial';
+			ctx.fillText('You Win', 190, 250);
+			ctx.fill();
+		}
+	</script>
+
+</html>
